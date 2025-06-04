@@ -1,0 +1,16 @@
+[project]
+name = "simple-protoc"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "grpcio>=1.72.1",
+    "grpcio-tools>=1.72.1",
+]
+
+[dependency-groups]
+dev = [
+    "grpcio>=1.72.1",
+    "grpcio-tools>=1.72.1",
+]

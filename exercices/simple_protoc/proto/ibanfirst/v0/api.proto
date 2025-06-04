@@ -1,0 +1,21 @@
+syntax = "proto3";
+package ibanfirst.v0;
+
+import "google/protobuf/timestamp.proto";
+
+option go_package = "github.com/slashformotion/proto-course/exercices/simple_protoc/ibanfirst/v0";
+
+message CreatePaymentRequest {
+    float amount = 1;
+    string iban = 2;
+    string bic = 3;
+    google.protobuf.Timestamp date = 4;
+}
+
+message CreatePaymentResponse {
+    uint32 payment_id = 1;
+}
+
+service ApiService {
+  rpc CreatePayment(CreatePaymentRequest) returns (CreatePaymentResponse);
+}

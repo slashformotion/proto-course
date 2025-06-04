@@ -172,3 +172,5 @@ public/
 
 # Sqlc
 **/sqlc/repositories
+.direnv
+.venv

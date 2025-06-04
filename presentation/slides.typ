@@ -11,7 +11,7 @@
 #show link: it => {
   if type(it.dest) == str {
     // Style links to strings red
-    text(fill: blue.darken(60%), it)
+    text(fill: blue.darken(50%), it)
   } else {
     // Return other links as usual
     it
@@ -71,6 +71,8 @@
     // syntax = "proto2";
     // edition = "2023";
     ```
+    #line(length: 100%)
+    no syntax specified: proto2 assumed
   ]
 ]
 
@@ -297,7 +299,28 @@
 ]
 
 #slide[
-  === TODO extension and annotations
+  === Option and Annotation
+  Protobuf has a way to add metadata to the messages and fields.
+
+  #toolbox.side-by-side[
+    ```proto
+    message User {
+      string name = 1 [json_name = "name"];
+    }
+    ```
+    The `json_name` field option is used to define the name of the field when it is serialized to JSON.
+  ][
+    ```proto
+    import "google/protobuf/descriptor.proto";
+
+    extend google.protobuf.FieldOptions {
+      string field_suffix = 12345; // this must be unique
+    }
+    message User {
+      string name = 1 [(field_suffix)= "This is the user's name"];
+    }
+    ```
+  ]
 ]
 
 #slide[
@@ -327,10 +350,10 @@
 ]
 
 #slide[
-  == Protobuf based RP
+  == Protobuf based RPC
 
+  Some commonly used RPC framework
 
-  some commonly used RPC framework
   #table(
     stroke: .5pt + black,
     columns: (auto, auto, auto, auto),
@@ -347,14 +370,177 @@
     [Apache Thrift], [Any], [Yes], [Simple, fast, C++-centric],
     [trpc], [Any], [No], [Pure TypeScript],
   )
+  #v(1fr)
+
+  Side notes: gRPC can also use alternative serialization formats but it's uncommon.
 ]
 
+#slide[
+  == gRPC
 
+  - gRPC: "gRPC Remote Procedure Calls"
+  - Started by Google in 2015, now a project of the #link("https://www.cncf.io")[Cloud Native Computing Foundation]
+  - Transport layer: HTTP/2
+  - Interface Definition Language: Protocol Buffers
+  - Open-Source: Apache License 2.0
+  - Most used RPC framework
+
+  - Development by RFCs: https://github.com/grpc/proposal
+
+  Docs: https://grpc.io
+]
 
 #slide[
+  == gRPC Features/Concepts
 
+  - Unary and Streaming RPC (client, server and bidirectional)
+  - Metadata (headers)
+  - Interceptors (middleware)
+  - Trailing metadata (HTTP/2 Trailers): used to send status codes, errors, etc.
+  - Deadlines/Timeouts: client communication timeouts to the server, which can know much time is left to respond.
+  - Cancellation: can be done by the client or the server, works on the server stops when the RPC is cancelled.
+  - Proxyless Load balancing: gRPC supports load balancing directly on the client side with the xDS protocol (xDS-based service discovery using a control plane)
+]
+
+#slide[
+  == gRPC-ecosystem
+
+  #grid(
+    columns: (1fr, 2fr),
+    gutter: 1em,
+    [Suite of tools and libraries for gRPC
+
+      - _gRPC-gateway_ : tool that converts gRPC APIs into RESTful APIs. Used to support legacy clients that are not capable of using gRPC.],
+    [#image("assets/gtw.svg")],
+  )
+
+  - _openapiv2_ : OpenAPI v2 specification generator for gRPC services.
+  - _grpc-opentracing_ : OpenTracing instrumentation for gRPC.
+  - _grpc-health-probe_ : gRPC health checking service.
+
+  Docs: https://github.com/grpc-ecosystem/
+]
+
+#slide[
+  = Tools
+
+  - *protoc*: official compiler, usually used with makefiles.\
+    - pros: official implementation, very flexible (almost to much).
+    - cons: somewhat slow, makefiles are not fun, no linting, mandatory vendoring.
+
+  - *prototool* @prototool: deprecated but still used protobuf toolchain created by Uber.
+    - pros: fast, good integration with IDEs, linting.
+    - cons: no package management, deprecated and unmaintained.
+
+  - *buf*: new protobuf toolchain, created by buf.build @bufCompany.
+    - pros: fast, good integration with IDEs, linting, package management.
+    - cons: remote plugins send your code to their cloud
+
+]
+
+#slide[
+  == Official protobuf compiler: protoc
+  Open-Source Code: https://github.com/protocolbuffers/protobuf .
+  Use plugins to generate code and artifacts from `.proto` files.
+
+  #toolbox.side-by-side[
+    ```bash
+    $ ls
+    ./proto/foo/bar/baz.proto # our proto
+    ./third_party/googleapi/annotation.proto
+    # vendored protos
+    ```
+  ][
+    ```bash
+    protoc --proto_path=./protos \
+      --proto_path=./third_party \
+      --go_out=paths=source_relative:. \
+      --go-grpc_out=paths=source_relative:. \
+    ```
+    calls (args passed via stdin):
+    - protoc-gen-go
+    - protoc-gen-go-grpc
+  ]
+  Proto files are managed manually (vendored proto code see @descriptorVendored)
+]
+#slide[
+  === Issues with protoc
+  Version/pinning issues:
+  - plugins versions are not pinned (you manage yourself your installation)
+  - dependencies are not pinned (you manage yourself the vendoring)
+  - homemade makefiles and/or shell scripts are required to automate the compilation
+  - (protoc version depends on your package manager or installation method)
+
+  Quality of code issues:
+  - No linting
+  - Modern IDE support is almost inexistent
+
+
+]
+
+#slide[
+  == buf.build cli: buf
+
+  All in one tool to manage your protobuf code using configuration first approach.
+
+  Version/pinning issues:
+  - #strike[plugins versions are not pinned (you manage yourself your installation)]\
+    #text(fill: red.darken(10%))[caveat: this require remote plugins]
+  - #strike[dependencies are not pinned (you manage yourself the vendoring)]
+  - #strike[homemade makefiles and/or shell scripts are required to automate the compilation]
+  - #strike[(protoc version depends on your package manager or installation method)]\
+    #text(fill: red.darken(10%))[caveat: this require pinning the buf cli]
+
+  Quality of code issues:
+  - #strike[No linting]
+  - #strike[Modern IDE support is almost inexistent] https://buf.build/docs/cli/editor-integration/
+  - #"+" Breaking change detection, gRPC curl ...
+]
+
+#slide[
+  === Migrating from protoc to buf
+  #set text(size: 14pt, font: "Andika")
+  #toolbox.side-by-side[
+    #heading(level: 4, numbering: none)[with protoc]
+    ```bash
+    protoc --proto_path=./protos \
+      --proto_path=./third_party \
+      --go_out=paths=source_relative:. \
+      --go-grpc_out=paths=source_relative:. \
+    ```
+    calls (args passed via stdin):
+    - protoc-gen-go
+    - protoc-gen-go-grpc
+  ][
+    #heading(level: 4, numbering: none)[with buf]
+    ```yaml
+    #buf.yaml
+    version: v2
+    modules:
+      - path: proto
+    deps:
+      - buf.build/googleapis/googleapis
+      - buf.build/bufbuild/protovalidate
+    lint:
+      use: [ "STANDARD"]
+
+    # buf.gen.yaml
+    version: v2
+    plugins:
+      - name: go # managed plugin
+        out: .
+        opt: paths=source_relative
+      - name: go-grpc # managed plugin
+        out: .
+        opt: paths=source_relative
+    ```
+    generate Go code with `buf generate`
+  ]
+]
+
+#slide[
   #set text(size: 10pt, font: "Andika")
-  #bibliography("./works.bib")
+  #bibliography("./works.bib", full: true, style: "ieee", title: "References")
 ]
 
 #friendly.last-slide(

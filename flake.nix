@@ -33,11 +33,18 @@
           delve
 
           protobuf
+          gnumake
 
           buf
 
           # for prez
           typst
+          just
+          protoc-gen-go
+          protoc-gen-go-grpc
+          uv
+          
+
         ];
       };
     });
