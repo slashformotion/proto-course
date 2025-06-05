@@ -2,6 +2,7 @@ syntax = "proto3";
 package ibanfirst.v0;
 
 import "google/protobuf/timestamp.proto";
+import "google/protobuf/empty.proto";
 
 option go_package = "github.com/slashformotion/proto-course/exercices/simple_protoc/ibanfirst/v0";
 
@@ -18,4 +19,5 @@ message CreatePaymentResponse {
 
 service ApiService {
   rpc CreatePayment(CreatePaymentRequest) returns (CreatePaymentResponse);
+  rpc ReturnErrCode(google.protobuf.Empty) returns (google.protobuf.Empty);
 }

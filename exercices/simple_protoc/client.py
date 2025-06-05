@@ -1,19 +1,52 @@
+import random
+
 import grpc
-import ibanfirst.v0.api_pb2 as v0proto
-import ibanfirst.v0.api_pb2_grpc as v0grpc
+from google.protobuf.timestamp_pb2 import Timestamp
+from google.protobuf.empty_pb2 import Empty
+import ibanfirst.v0.api_pb2 as ibanfirst_pb2
+import ibanfirst.v0.api_pb2_grpc as ibanfirst_pb2_grpc
+from datetime import datetime
 
 
-def run():
-    # Connect to gRPC server at localhost:50051
-    with grpc.insecure_channel('localhost:50051') as channel:
-        # Create stub from generated code
-        stub = v0grpc.ApiServiceStub(channel)
+def createPayment(stub: ibanfirst_pb2_grpc.ApiServiceServicer):
+    timestamp = Timestamp()
+    timestamp.FromDatetime(datetime.now())
 
-        # Create and send a 
-        request = v0proto.CreatePaymentRequest(amount=1, iban="FR763000100031234567890143")
-        response = stub.CreatePayment(request)
+    # Build the request message
+    request = ibanfirst_pb2.CreatePaymentRequest(
+        amount=random.randint(1, 100),
+        iban="FR763000100031234567890143",
+        bic="COBADEFFXXX",
+        date=timestamp,
+    )
 
-        print(f"Greeter client received: {response}")
+    # Call the remote procedure
 
-if __name__ == '__main__':
-    run()
+    response = stub.CreatePayment(request)
+
+    print(f"Payment created with ID: {response.payment_id}")
+
+
+def returnErrorCode(stub: ibanfirst_pb2_grpc.ApiServiceServicer):
+    try:
+        response = stub.ReturnErrCode(Empty())
+        print(f"CreatePayment response: {response}")
+    except grpc.RpcError as e:
+        print("we received an error from the server")
+        print(f"ReturnErrCode code: {grpc.StatusCode(e.code())}")
+        print(f"ReturnErrCode error: {e.details()}")
+    return
+
+
+if __name__ == "__main__":
+    print("Starting client...")
+    # open tcp connection to the server
+    with grpc.insecure_channel("localhost:50051") as channel:
+        # create client
+        stub = ibanfirst_pb2_grpc.ApiServiceStub(channel)
+        print("create payment request")
+        createPayment(stub)
+
+        print()
+        print("return error code request")
+        returnErrorCode(stub)

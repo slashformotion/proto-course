@@ -1,5 +1,13 @@
 {
     "recommendations": [
-        "ms-python.python"
+        "ms-python.python",
+        "bufbuild.vscode-buf",
+        "golang.go",
+        "redhat.vscode-yaml",
+
+        // for nix and typst, no need to install them if you don't use them
+        "jnoortheen.nix-ide",
+        "myriad-dreamin.tinymist",
+        "charliermarsh.ruff"
     ]
 }

@@ -3,13 +3,17 @@ package main
 import (
 	"context"
 	"log"
+	"math/rand"
 	"net"
 	"sync/atomic"
 	"time"
 
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/reflection"
+	"google.golang.org/grpc/status"
+	"google.golang.org/protobuf/types/known/emptypb"
 
 	pb "github.com/slashformotion/proto-course/exercices/simple_protoc/ibanfirst/v0"
 )
@@ -18,6 +22,25 @@ var paymentCounter uint32 = 0
 
 type server struct {
 	pb.UnimplementedApiServiceServer
+}
+
+func (s *server) ReturnErrCode(context.Context, *emptypb.Empty) (*emptypb.Empty, error) {
+
+	codesSelect := []codes.Code{
+		codes.InvalidArgument,
+		codes.NotFound,
+		codes.AlreadyExists,
+		codes.ResourceExhausted,
+		codes.FailedPrecondition,
+		codes.OutOfRange,
+		codes.Unimplemented,
+		codes.Internal,
+		codes.DataLoss,
+		codes.Unavailable,
+	}
+	selectedCode := codesSelect[rand.Intn(len(codesSelect))]
+	log.Printf("Returning error code: %v", selectedCode)
+	return &emptypb.Empty{}, status.Error(selectedCode, "an error occurred on the server")
 }
 
 // CreatePayment implements v0.ApiServiceServer.

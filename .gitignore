@@ -174,3 +174,5 @@ public/
 **/sqlc/repositories
 .direnv
 .venv
+*pb2*.py
+*.pyc
