@@ -6,7 +6,7 @@ default: api-python api-go
 
 api-go: 
 	@echo "Generating Go code"
-	 protoc -I $(PROTO_DIR) \
+	protoc -I $(PROTO_DIR) \
 	--go_out=. \
 	--go_opt=paths=source_relative \
 	--go-grpc_out=. \

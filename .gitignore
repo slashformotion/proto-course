@@ -176,3 +176,4 @@ public/
 .venv
 *pb2*.py
 *.pyc
+*swagger.json

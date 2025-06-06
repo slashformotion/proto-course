@@ -5,8 +5,11 @@ description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
+    "google-api-python-client>=2.171.0",
     "grpcio>=1.72.1",
     "grpcio-tools>=1.72.1",
+    "protoc-gen-openapiv2>=0.0.1",
+    "requests>=2.32.3",
 ]
 
 [dependency-groups]

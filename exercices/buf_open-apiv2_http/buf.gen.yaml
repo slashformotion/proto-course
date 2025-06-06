@@ -1,0 +1,26 @@
+version: v2
+# WARNING: remote plugins SHOULD NEVER BE USED. Remote plugins are sending your .proto code to buf.build servers. THIS IS NOT A SANCTIONNED PRACTICE AT IBANFIRST. While buf.build advertises remote plugins as a way not have to deal with protoc plugins installation, it is a potential security risk as we can't audit their generator code easily. Depending on remote servers for our build toolchain is also not very smart. Please use local plugins instead.
+plugins:
+  - protoc_builtin: "python"
+    out: .
+  - local: protoc-gen-grpc_python
+    out: .
+    # opt:
+    #   - paths=source_relative
+  - local: protoc-gen-go
+    out: .
+    opt:
+      - paths=source_relative
+  - local: protoc-gen-go-grpc
+    out: .
+    opt:
+      - paths=source_relative
+  - local: protoc-gen-grpc-gateway
+    out: .
+    opt:
+      - paths=source_relative
+  - local: protoc-gen-openapiv2 
+    out: . 
+    opt:
+      - enable_rpc_deprecation=true # docs: https://grpc-ecosystem.github.io/grpc-gateway/docs/mapping/customizing_openapi_output/#enable-rpc-deprecation
+  

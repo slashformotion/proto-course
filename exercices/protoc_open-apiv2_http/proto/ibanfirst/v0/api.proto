@@ -1,0 +1,50 @@
+syntax = "proto3";
+package ibanfirst.v0;
+
+import "google/protobuf/timestamp.proto";
+
+import "google/api/annotations.proto";
+import "protoc-gen-openapiv2/options/annotations.proto";
+
+option go_package = "github.com/slashformotion/proto-course/exercices/simple_protoc/ibanfirst/v0";
+
+option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_swagger) = {
+  info: {
+    title: "This is the payment API"
+    version: "2.0"
+    description: "This API the creation of payments"
+    contact: {
+      name: "Payment Team"
+      url: "https://foo.bar"
+      email: "foo@bar.com"
+    }
+  }
+  schemes: HTTPS
+  consumes: "application/json"
+  produces: "application/json"
+};
+
+message CreatePaymentRequest {
+    float amount = 1;
+    string iban = 2;
+    string bic = 3;
+    google.protobuf.Timestamp date = 4;
+}
+
+message CreatePaymentResponse {
+    uint32 payment_id = 1 [json_name = "payment_id"];
+}
+
+service ApiService {
+  rpc CreatePayment(CreatePaymentRequest) returns (CreatePaymentResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/payment/create"
+      body: "*"
+    };
+     option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "Reconcile 1fm and >0 sm or 1sm and >0 fm"
+      tags: "RECONCILIATION"
+    };
+  }
+
+}

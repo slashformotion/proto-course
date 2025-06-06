@@ -18,3 +18,6 @@ tip: if you use nix with flakes, just use the devShell from `flake.nix`.
     
 - protoc installed https://protobuf.dev/installation/
 - buf  : `go install github.com/bufbuild/buf/cmd/buf@v1.54.0`
+- a recent version of python3. There is an uv project in the repo if you want to use it. If not you need to install theses packages:
+    - grpcio
+    - grpcio-tools
