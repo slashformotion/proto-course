@@ -18,10 +18,7 @@
   }
 }
 
-#show: friendly.setup.with(
-  short-title: [Intro to the proto/RPC ecosystem],
-  short-speaker: [Théophile Roos],
-)
+#show: friendly.setup.with(short-title: [Intro to the proto/RPC ecosystem], short-speaker: [Théophile Roos])
 
 #set heading(numbering: "1.1.1")
 #set text(size: 20pt, font: "Andika")
@@ -48,9 +45,11 @@
 #slide[
   = What is protobuf ?
 
-  Short for Protocol Buffers: an efficient, language-neutral data serialization format developed by Google
-
-  - Much smaller and faster than formats like JSON or XML
+  Short for Protocol Buffers:
+  - an efficient, language-neutral data description language.
+  - a binary serialization format that use the language to describe the structure of the data.
+  Main features:
+  - Much smaller and faster  than formats like JSON or XML
   - Strong Typing and Schema: strict structure of the data defined in `.proto` files, enabling forward and backward compatibility
   - Used for many use-cases: synchronous communication between network services, async communication through brokers systems (Kafka, RabbitMQ...), WebAssembly interfaces...
 ]
@@ -92,7 +91,6 @@
       map<string, int32> ibanToBalance = 4;
     }
     ```
-
   ][
     Fields are defined with:
     - a FieldType: #link("https://protobuf.dev/programming-guides/proto3/#scalar")[int32, string, bool, bytes, etc].
@@ -299,10 +297,24 @@
 ]
 
 #slide[
+  ==== What are RPCs ?
+
+  #link("https://en.wikipedia.org/wiki/Remote_procedure_call")[_Remote Procedure Calls_]: a way to call a function on a remote server.
+
+  RPC based communication is a common pattern with many different implementations @rpcWiki:
+
+  - NFS: Network File System
+  - JSON-RPC: an RPC protocol that uses JSON-encoded messages.
+  - gRPC is a modern open source RPC framework that uses HTTP/2 and Protocol Buffers.
+  - IBM AIX: use of RPC in the AIX operating system. @aixRpc
+]
+
+#slide[
   === Option and Annotation
   Protobuf has a way to add metadata to the messages and fields.
+  #set text(size: 18pt, font: "Andika")
 
-  #toolbox.side-by-side[
+  #toolbox.side-by-side(columns: (1fr, 2fr))[
     ```proto
     message User {
       string name = 1 [json_name = "name"];
@@ -312,12 +324,15 @@
   ][
     ```proto
     import "google/protobuf/descriptor.proto";
+    import "ibanfirst/base.proto"
 
     extend google.protobuf.FieldOptions {
-      string field_suffix = 12345; // this must be unique
+      string description  = 12345; // this must be unique
     }
     message User {
-      string name = 1 [(field_suffix)= "This is the user's name"];
+      option (ibanfirst.base.log).skip =true;
+      string email = 1 [(description)= "This is the user's name"];
+      string password = 2 [(description) = "This is the user's password"];
     }
     ```
   ]
@@ -337,19 +352,6 @@
 ]
 
 #slide[
-  = RPCs
-
-  #link("https://en.wikipedia.org/wiki/Remote_procedure_call")[_Remote Procedure Calls_]: a way to call a function on a remote server
-
-  RPC based communication is pattern with many different implementations @rpcWiki:
-
-  - NFS: Network File System
-  - JSON-RPC: an RPC protocol that uses JSON-encoded messages.
-  - gRPC is a modern open source RPC framework that uses HTTP/2 and Protocol Buffers.
-  - IBM AIX: use of RPC in the AIX operating system. @aixRpc
-]
-
-#slide[
   == Protobuf based RPC
 
   Some commonly used RPC framework
@@ -357,12 +359,7 @@
   #table(
     stroke: .5pt + black,
     columns: (auto, auto, auto, auto),
-    table.header(
-      [Framework],
-      [Transport Layer],
-      [Code Generation],
-      [Notable Features],
-    ),
+    table.header([Framework], [Transport Layer], [Code Generation], [Notable Features]),
 
     [gRPC], [HTTP/2], [Yes], [Streaming, TLS, strong ecosystem],
     [ConnectRPC], [HTTP], [Yes], [Streaming, TLS, wide platform support],
@@ -442,6 +439,11 @@
   == Official protobuf compiler: protoc
   Open-Source Code: https://github.com/protocolbuffers/protobuf .
   Use plugins to generate code and artifacts from `.proto` files.
+  #set align(center)
+  #image("assets/protoc_arch.png", height: 60%)
+]
+
+#slide[
 
   #toolbox.side-by-side[
     ```bash
@@ -463,38 +465,26 @@
   ]
   Proto files are managed manually (vendored proto code see @descriptorVendored)
 ]
-#slide[
-  === Issues with protoc
-  Version/pinning issues:
-  - plugins versions are not pinned (you manage yourself your installation)
-  - dependencies are not pinned (you manage yourself the vendoring)
-  - homemade makefiles and/or shell scripts are required to automate the compilation
-  - (protoc version depends on your package manager or installation method)
 
-  Quality of code issues:
-  - No linting
-  - Modern IDE support is almost inexistent
+// #slide[
+//   === Issues with protoc
+//   Version/pinning issues:
+//   - plugins versions are not pinned (you manage yourself your installation)
+//   - dependencies are not pinned (you manage yourself the vendoring)
+//   - homemade makefiles and/or shell scripts are required to automate the compilation
+//   - (protoc version depends on your package manager or installation method)
 
-
-]
+//   Quality of code issues:
+//   - No linting
+//   - Modern IDE support is almost inexistent
+// ]
 
 #slide[
   == buf.build cli: buf
 
   All in one tool to manage your protobuf code using configuration first approach.
 
-  Version/pinning issues:
-  - #strike[plugins versions are not pinned (you manage yourself your installation)]\
-    #text(fill: red.darken(10%))[caveat: this require remote plugins]
-  - #strike[dependencies are not pinned (you manage yourself the vendoring)]
-  - #strike[homemade makefiles and/or shell scripts are required to automate the compilation]
-  - #strike[(protoc version depends on your package manager or installation method)]\
-    #text(fill: red.darken(10%))[caveat: this require pinning the buf cli]
 
-  Quality of code issues:
-  - #strike[No linting]
-  - #strike[Modern IDE support is almost inexistent] https://buf.build/docs/cli/editor-integration/
-  - #"+" Breaking change detection, gRPC curl ...
 ]
 
 #slide[
